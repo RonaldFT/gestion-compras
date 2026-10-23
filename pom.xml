@@ -45,6 +45,11 @@
       <version>1.4.20</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-workitems-rest</artifactId>
+      <version>7.74.1.Final</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
