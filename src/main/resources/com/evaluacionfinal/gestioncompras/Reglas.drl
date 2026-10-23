@@ -1,2 +1,59 @@
 package com.evaluacionfinal.gestioncompras;
+import java.util.Map;
+import java.math.BigDecimal;
 
+rule "Datos invalidos"
+ ruleflow-group "evaluar-compra"
+ salience 100
+ when
+  $s : Map(this["ruta"] == "PENDIENTE")
+  eval($s.get("productoId") == null || ((Integer)$s.get("productoId")) <= 0 || $s.get("cantidad") == null || ((Integer)$s.get("cantidad")) <= 0 || $s.get("motivo") == null || ((String)$s.get("motivo")).trim().isEmpty())
+ then
+  $s.put("ruta", "RECHAZAR");
+  $s.put("resultado", "RECHAZADA");
+  $s.put("detalle", "Datos invalidos: revisar producto, cantidad y motivo.");
+  update($s);
+end
+rule "Producto inexistente"
+ ruleflow-group "evaluar-compra"
+ salience 90
+ when
+  $s : Map(this["ruta"] == "PENDIENTE", this["encontrado"] == false)
+ then
+  $s.put("ruta", "RECHAZAR");
+  $s.put("resultado", "RECHAZADA");
+  $s.put("detalle", "El producto no existe en el catalogo.");
+  update($s);
+end
+rule "Stock insuficiente"
+ ruleflow-group "evaluar-compra"
+ salience 80
+ when
+  $s : Map(this["ruta"] == "PENDIENTE", this["encontrado"] == true)
+  eval($s.get("cantidad") != null && $s.get("stock") != null && ((Integer)$s.get("cantidad")) > ((Integer)$s.get("stock")))
+ then
+  $s.put("ruta", "RECHAZAR");
+  $s.put("resultado", "RECHAZADA");
+  $s.put("detalle", "La cantidad solicitada supera el stock disponible.");
+  update($s);
+end
+rule "Compra directa"
+ ruleflow-group "evaluar-compra"
+ salience 70
+ when
+  $s : Map(this["ruta"] == "PENDIENTE", this["encontrado"] == true)
+  eval($s.get("total") != null && ((BigDecimal)$s.get("total")).compareTo(new BigDecimal("500.00")) <= 0)
+ then
+  $s.put("ruta", "DIRECTA");
+  update($s);
+end
+rule "Aprobacion adicional"
+ ruleflow-group "evaluar-compra"
+ salience 60
+ when
+  $s : Map(this["ruta"] == "PENDIENTE", this["encontrado"] == true)
+  eval($s.get("total") != null && ((BigDecimal)$s.get("total")).compareTo(new BigDecimal("500.00")) > 0)
+ then
+  $s.put("ruta", "APROBACION");
+  update($s);
+end
