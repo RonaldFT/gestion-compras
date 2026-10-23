@@ -49,6 +49,7 @@
       <groupId>org.jbpm</groupId>
       <artifactId>jbpm-workitems-rest</artifactId>
       <version>7.74.1.Final</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <build>
